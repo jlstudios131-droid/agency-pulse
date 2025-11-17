@@ -1,0 +1,12 @@
+.next
+node_modules
+dist
+build
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.env
+.env.local
+public/**/*.png
+public/**/*.jpg
+public/**/*.svg
