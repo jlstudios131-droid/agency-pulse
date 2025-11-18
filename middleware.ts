@@ -1,25 +1,38 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+// Cookie created by Supabase Auth Helpers (HttpOnly + Secure)
+const AUTH_COOKIE = "sb-access-token";
+
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("sb-access-token")?.value;
+  const token = req.cookies.get(AUTH_COOKIE)?.value;
 
-  const isAuth = Boolean(token);
-  const isAuthRoute = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/signup");
+  const { pathname } = req.nextUrl;
 
-  // If authenticated, prevent access to auth routes
-  if (isAuth && isAuthRoute) {
+  const isAuthenticated = Boolean(token);
+
+  const isAuthPage =
+    pathname.startsWith("/auth/login") || pathname.startsWith("/auth/signup");
+
+  const isProtected = pathname.startsWith("/dashboard");
+
+  // If authenticated → block access to login/signup
+  if (isAuthenticated && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  // Protect dashboard routes
-  if (!isAuth && req.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  // If NOT authenticated → protect dashboard and private pages
+  if (!isAuthenticated && isProtected) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup"]
+  matcher: [
+    "/auth/login",
+    "/auth/signup",
+    "/dashboard/:path*",
+  ],
 };
