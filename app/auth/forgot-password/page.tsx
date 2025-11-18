@@ -5,38 +5,30 @@ import { useState } from "react";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg("");
-
-    if (!email.includes("@")) {
-      setErrorMsg("Please enter a valid email.");
-      return;
-    }
-
+    setStatus(null);
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await fetch("/api/auth/send-reset-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
 
-      const json = await res.json();
+      const data = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(json.error || "Something went wrong.");
+        setStatus(data.error || "Something went wrong.");
         setLoading(false);
         return;
       }
 
-      setSent(true);
-    } catch (err) {
-      setErrorMsg("Unexpected error, try again.");
+      setStatus("If this email exists, a reset link has been sent.");
+    } catch (error) {
+      setStatus("Unexpected error, please try again.");
     } finally {
       setLoading(false);
     }
@@ -53,32 +45,24 @@ export default function ForgotPasswordPage() {
           Enter your email and we'll send you a reset link.
         </p>
 
-        {errorMsg && (
-          <p className="text-red-600 text-sm mb-2">{errorMsg}</p>
+        {status && (
+          <p className="text-sm mb-3 text-blue-600">{status}</p>
         )}
 
-        {sent ? (
-          <p className="text-green-600 text-sm">
-            If this email exists, a reset link was sent.
-          </p>
-        ) : (
-          <>
-            <input
-              type="email"
-              className="w-full border p-3 rounded mb-3"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+        <input
+          type="email"
+          className="w-full border p-3 rounded mb-3"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-            <button
-              disabled={loading}
-              className="w-full bg-black text-white p-3 rounded"
-            >
-              {loading ? "Sending..." : "Send reset link"}
-            </button>
-          </>
-        )}
+        <button
+          disabled={loading}
+          className="w-full bg-black text-white p-3 rounded disabled:opacity-40"
+        >
+          {loading ? "Sending..." : "Send Reset Link"}
+        </button>
       </form>
     </div>
   );
