@@ -5,13 +5,12 @@ import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
 export async function signupAction(
-  prevState: { error: string; success: boolean },
+  prevState: { error: string; success: boolean; redirect?: string },
   formData: FormData
 ) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  // Basic validation (security)
   if (!email || !email.includes("@")) {
     return { error: "Please enter a valid email.", success: false };
   }
@@ -34,6 +33,5 @@ export async function signupAction(
     return { error: error.message, success: false };
   }
 
-  // User created successfully → must verify email
-  return { error: "", success: true };
+  return { error: "", success: true, redirect: "/auth/check-email" };
 }
