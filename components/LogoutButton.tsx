@@ -1,33 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-
 export default function LogoutButton() {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  const logout = async () => {
-    setLoading(true);
-
-    const res = await fetch("/api/auth/logout", {
+  const handleLogout = async () => {
+    await fetch("/auth/logout", {
       method: "POST",
+      credentials: "include",
     });
 
-    setLoading(false);
-
-    if (res.ok) {
-      router.push("/login");
-    }
+    // Use full page reload to guarantee cookies update immediately
+    window.location.href = "/auth/login";
   };
 
   return (
     <button
-      onClick={logout}
-      className="px-4 py-2 bg-gray-900 text-white rounded disabled:opacity-40"
-      disabled={loading}
+      onClick={handleLogout}
+      className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition"
     >
-      {loading ? "Signing out..." : "Logout"}
+      Logout
     </button>
   );
 }
