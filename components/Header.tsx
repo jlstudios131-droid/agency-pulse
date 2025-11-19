@@ -1,18 +1,22 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
+import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export default function Header() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  // Criar o cliente supabase no lado do browser
+  const supabase = createSupabaseBrowserClient();
+
   const handleLogout = async () => {
     setLoading(true);
 
     await supabase.auth.signOut();
-    router.push("/login");
+
+    router.push("/auth/login");
 
     setLoading(false);
   };
