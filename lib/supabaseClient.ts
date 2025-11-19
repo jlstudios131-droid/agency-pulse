@@ -1,18 +1,24 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@supabase/supabase-js";
+
+// Garantir que as variáveis existem
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
- * Supabase client for client-side components.
- * Uses secure cookies automatically (HttpOnly + Secure).
+ * Cliente Supabase para uso no BROWSER (componentes "use client")
  */
 export function createSupabaseBrowserClient() {
-  return createClientComponentClient({
-    cookies: {
-      get(name: string) {
-        if (typeof document === "undefined") return null;
-        const match = document.cookie.match(
-          new RegExp("(^| )" + name + "=([^;]+)")
-        );
-        return match ? match[2] : null;
+  return createClient(supabaseUrl, supabaseAnonKey);
+}
+
+/**
+ * Cliente Supabase para uso em Server Actions / Server Components
+ */
+export function createSupabaseServerClient(accessToken: string) {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
     },
   });
