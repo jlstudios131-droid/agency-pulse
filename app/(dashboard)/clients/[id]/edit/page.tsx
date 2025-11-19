@@ -2,10 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@/utils/supabase/client";
+import { createClient } from "@supabase/supabase-js";
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
-  const supabase = createBrowserClient();
+  // Criar supabase client *no browser*
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -19,7 +24,6 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
     notes: "",
   });
 
-  // Carregar dados do cliente
   useEffect(() => {
     const loadClient = async () => {
       const {
@@ -153,4 +157,4 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       </form>
     </div>
   );
-               }
+      }
