@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseBrowserClient } from "@/lib/supabaseClient";
 
 export default function EditClientPage({ params }: { params: { id: string } }) {
-  // Criar supabase client *no browser*
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
   const router = useRouter();
 
+  // Cliente correto Supabase with auth helpers
+  const supabase = createSupabaseBrowserClient();
+
   const [loading, setLoading] = useState(true);
-  const [client, setClient] = useState<any>(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -26,6 +22,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const loadClient = async () => {
+      // verificar user autenticado
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -35,6 +32,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         return;
       }
 
+      // buscar workspace do user
       const { data: member } = await supabase
         .from("workspace_members")
         .select("workspace_id")
@@ -43,6 +41,7 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
 
       if (!member) return;
 
+      // carregar dados do cliente
       const { data } = await supabase
         .from("clients")
         .select("*")
@@ -51,14 +50,13 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
         .single();
 
       if (data) {
-        setClient(data);
         setForm({
-          name: data.name || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          company: data.company || "",
-          website: data.website || "",
-          notes: data.notes || "",
+          name: data.name ?? "",
+          email: data.email ?? "",
+          phone: data.phone ?? "",
+          company: data.company ?? "",
+          website: data.website ?? "",
+          notes: data.notes ?? "",
         });
       }
 
@@ -157,4 +155,4 @@ export default function EditClientPage({ params }: { params: { id: string } }) {
       </form>
     </div>
   );
-      }
+          }
