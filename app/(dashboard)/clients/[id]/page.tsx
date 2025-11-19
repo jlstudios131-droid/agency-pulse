@@ -12,30 +12,38 @@ export default async function ClientDetails({ params }: { params: { id: string }
   if (!user) return <div>Não autenticado</div>;
 
   // 2. Obter o workspace do user
-  const { data: workspaceMember } = await supabase
+  const { data: workspaceMember, error: wsError } = await supabase
     .from("workspace_members")
     .select("workspace_id")
     .eq("user_id", user.id)
     .single();
 
-  if (!workspaceMember) {
-    return <div>Nenhum workspace encontrado.</div>;
+  if (wsError || !workspaceMember) {
+    return <div>Erro: nenhum workspace encontrado.</div>;
   }
 
-  // 3. Buscar o cliente específico
-  const { data: client, error } = await supabase
+  const workspaceId = workspaceMember.workspace_id;
+
+  // 3. Buscar o cliente, verificando workspace
+  const { data: client, error: clientError } = await supabase
     .from("clients")
     .select("*")
     .eq("id", params.id)
-    .eq("workspace_id", workspaceMember.workspace_id)
+    .eq("workspace_id", workspaceId) // Proteção importante
     .single();
 
-  if (error || !client) {
-    return <div>Cliente não encontrado.</div>;
+  if (clientError || !client) {
+    return (
+      <div className="p-6 text-red-600 font-semibold">
+        Cliente não encontrado ou você não tem acesso.
+      </div>
+    );
   }
 
+  // 4. Renderização
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{client.name}</h1>
 
@@ -47,9 +55,10 @@ export default async function ClientDetails({ params }: { params: { id: string }
         </Link>
       </div>
 
+      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* Card: Informações do Cliente */}
+        {/* Card: Informações */}
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Informações</h2>
 
@@ -69,7 +78,7 @@ export default async function ClientDetails({ params }: { params: { id: string }
           </p>
         </div>
 
-        {/* Card: Projetos associados */}
+        {/* Card: Projetos */}
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Projetos</h2>
           <p className="text-gray-600">
@@ -77,7 +86,7 @@ export default async function ClientDetails({ params }: { params: { id: string }
           </p>
         </div>
 
-        {/* Card: Faturas / Finanças */}
+        {/* Card: Finanças */}
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Faturas & Pagamentos</h2>
           <p className="text-gray-600">
@@ -88,4 +97,4 @@ export default async function ClientDetails({ params }: { params: { id: string }
       </div>
     </div>
   );
-    }
+}
