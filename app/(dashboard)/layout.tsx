@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
-import "../styles/dashboard.css"; // opcional se quiseres estilos globais por seção
 
 export const metadata = {
   title: "Dashboard — AgencyPulse",
